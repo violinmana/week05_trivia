@@ -1,7 +1,6 @@
 $(document).ready(function () {
 
     //Functions
-
     //Initialization Function
     var createStart = function () {
         $('#triviaGame').append(`<h1 class='display-2'>Trivia Game`)
@@ -10,8 +9,13 @@ $(document).ready(function () {
 
     //Timer Function
     var countSec = function () {
-        timerRunning = true
-        intervalSec = setInterval(count, 1000)
+
+        if (questionNum === questionObj.length) {
+            endPage()
+        } else {
+            timerRunning = true
+            intervalSec = setInterval(count, 1000)
+        }
     }
 
     var count = function () {
@@ -22,7 +26,7 @@ $(document).ready(function () {
         if (secondsLeft === 0 && questionBool === true) {
             timerRunning = false
             clearInterval(intervalSec)
-            nextPage()
+            nextPageNoAns()
             console.log('timeoutpage')
         } else if (secondsLeft === 0 && questionBool === false) {
             timerRunning = false
@@ -33,36 +37,69 @@ $(document).ready(function () {
     }
 
     var questionPage = function () {
-
         $('#triviaGame').empty()
 
         questionBool = true
         secondsLeft = 10
         $('#triviaGame').append(`<div id='countDown' class='display-2'>00:10`)
 
-        for (var i = 0; i < Object.values(questionObj[questionNum])[2].length; i++) {
-            $('#triviaGame').append(`<button id='poss${i}' class='btn btn-primary btn-lg'>${Object.values(questionObj[questionNum])[2][i]}`)
-        }
+        console.log(Object.values(questionObj[questionNum].answer))
 
-        questionNum++
+        $('#triviaGame').append(`<div class='display-2'>${Object.values(questionObj)[questionNum].question}`)
+
+        for (var i = 0; i < Object.values(questionObj[questionNum])[2].length; i++) {
+            $('#triviaGame').append(`<button val='${i}' class='btn btn-primary btn-lg ansBtn'>${Object.values(questionObj[questionNum])[2][i]}`)
+        }
 
         countSec()
     }
 
-    var nextPage = function () {
+    var nextPageAns = function () {
         $('#triviaGame').empty()
-
         questionBool = false
         secondsLeft = 3
         $('#triviaGame').append(`<div id='countDown' class='display-2'>00:03`)
 
+        if (ansBtnVal === Object.values(questionObj[questionNum].answer)) {
+            $('#triviaGame').append(`<div class='display-2'>You got it right!`)
+            numCorrect++
+        } else {
+            $('#triviaGame').append(`<div class='display-2'>You got it wrong.`)
+            numWrong++
+        }
+
+        $('#triviaGame').append(`<div class='display-2'>Correct Answers = ${numCorrect}`)
+
+        $('#triviaGame').append(`<div class='display-2'>Wrong Answers = ${numWrong}`)
+
+        questionNum++
         countSec()
     }
 
+    var nextPageNoAns = function () {
+        $('#triviaGame').empty()
+        questionBool = false
+        secondsLeft = 3
+        $('#triviaGame').append(`<div id='countDown' class='display-2'>00:03`)
+        $('#triviaGame').append(`<div class='display-2'>You timed out and therefore wrong.`)
+        numWrong++
 
+        $('#triviaGame').append(`<div class='display-2'>Correct Answers = ${numCorrect}`)
+        $('#triviaGame').append(`<div class='display-2'>Wrong Answers = ${numWrong}`)
+
+        questionNum++
+        countSec()
+    }
+
+    var endPage = function() {
+
+        $('#triviaGame').append(`<div class='display-2'>You have reached the end. Your results are as follows:`)
+
+        $('#triviaGame').append(`<div class='display-2'>Correct Answers = ${numCorrect}`)
+        $('#triviaGame').append(`<div class='display-2'>Wrong Answers = ${numWrong}`)
+    }
 
     //Global Variables
-
     var intervalSec
     var secondsLeft
     var timerRunning = false
@@ -70,8 +107,12 @@ $(document).ready(function () {
 
     var questionNum = 0
 
-    //Questions and Answers
+    var ansBtnVal = ''
 
+    var numCorrect = 0
+    var numWrong = 0
+
+    //Questions and Answers
     var questionObj = [{
             question: 'Question 1',
             answer: 'Answer 1',
@@ -89,55 +130,18 @@ $(document).ready(function () {
         }
     ]
 
-    for (var i = 0; i < questionObj.length; i++) {
-        console.log(questionObj[i])
-        console.log(Object.values(questionObj[i])[0])
-        console.log(Object.values(questionObj[i])[2][0])
-    }
-
-    if (Object.values(questionObj[0])[1] === Object.values(questionObj[0])[2][0]) {
-        console.log('True')
-    }
-
-
-
-
-
-
-    //Timer
-
-    //    for (var key in questionObj) {
-    //        if (questionObj.hasOwnProperty(key)) {
-    //            console.log(key + " - " + questionObj[key])
-    //        }
-    //    }
-
-
-
-
-
     //Initialation
-
     createStart()
 
+    //On Start Click
     $('#start').on('click', function () {
         questionPage()
-
-        //When User Clicks Button
-
-
-
     })
 
-
-
-
-
-
-
-
-
-
-
+    //On Answer Button CLick
+    $(document.body).on('click', '.ansBtn', function () {
+        ansBtnVal = $(this).val()
+        nextPageAns()
+    })
 
 })
